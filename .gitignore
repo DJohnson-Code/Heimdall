@@ -222,6 +222,7 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 .cursor/
+.codex
 .codex/
 .claude/
 .opencode/
