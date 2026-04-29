@@ -221,14 +221,30 @@ __marimo__/
 AGENTS.md
 CLAUDE.md
 GEMINI.md
+.cursorrules
 .cursor/
 .codex
 .codex/
+.codexignore
+.claude
 .claude/
+.claudeignore
 .opencode/
 .continue/
 .aider*
+.copilot/
+.github/copilot-instructions.md
+.windsurf/
+.windsurfrules
+.augment/
+.sourcegraph/
+.tabnine/
+.zed/settings.json
+.zed/tasks.json
 opencode.json
+
+# Local docs / planning artifacts
+docs/
 
 # Local files
 *.sqlite3
