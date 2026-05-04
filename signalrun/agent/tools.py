@@ -2,7 +2,7 @@ from langchain_core.tools import tool
 
 
 @tool
-def search(topic: str): 
+def search(query: str): 
     pass
 
 
