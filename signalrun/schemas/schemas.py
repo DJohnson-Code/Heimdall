@@ -11,7 +11,7 @@ class FeedItem(BaseModel):
     source: str = Field(min_length=1)
     publisher: str | None = None
     published_at: datetime | None = None
-    snippet: str | None = None 
+    snippet: str = Field(min_length=1)
 
     model_config = ConfigDict(extra="allow")
 
