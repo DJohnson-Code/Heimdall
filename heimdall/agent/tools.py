@@ -64,11 +64,6 @@ def search_rss(topic_name: str) -> list[dict]:
 
 
 
-
-
-Here's the Option B version. One "url" key everywhere — it's the final redirected URL when we have a response, and falls back to the input URL when the request itself failed.
-
-Recommended fetch_article
 @tool(description="Fetch article text from a URL.")
 def fetch_article(url: str) -> dict:
     """Fetch one article URL and return extracted article text."""
@@ -94,7 +89,9 @@ def fetch_article(url: str) -> dict:
             "error": "request_failed",
             "message": str(exc),
         }
+
     final_url = str(response.url)
+
     content_type = response.headers.get("content-type", "").lower()
     if "html" not in content_type:
         return {
@@ -104,7 +101,9 @@ def fetch_article(url: str) -> dict:
             "content_type": content_type or "missing",
             "status_code": response.status_code,
         }
-    article = trafilatura.extract(response.text) or ""
+
+    article = trafilatura.extract(response.text, url=final_url) or ""
+
     if not article:
         return {
             "url": final_url,
@@ -121,3 +120,4 @@ def fetch_article(url: str) -> dict:
         "truncated": len(article) > MAX_ARTICLE_CHARS,
     }
     
+TOOLS = [search_rss, fetch_article]
