@@ -29,6 +29,7 @@ Return a JSON array of objects with exactly this shape, and nothing else:
     "url": "<from fetch_article result>",
     "source": "<from fetch_article result>",
     "snippet": "<from search_rss>",
+    "selection_reason": "<why this article was selected>",
     "article": "<from fetch_article result>"
   }
 ]

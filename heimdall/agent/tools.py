@@ -37,6 +37,17 @@ def search_rss(topic_name: str) -> list[dict]:
     rss_output: list[dict] = []
 
     for feed_url in topic.rss_sources: 
+        try:
+            response = httpx.get(
+                feed_url,
+                timeout=10,
+                follow_redirects=True,
+                headers={"User-Agent": "Heimdall/0.1"},
+            )
+            response.raise_for_status()
+        except httpx.HTTPError:
+            continue
+        
         feed = feedparser.parse(feed_url)
 
         for entry in feed.entries: 

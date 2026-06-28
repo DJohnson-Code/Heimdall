@@ -1,15 +1,19 @@
-from heimdall.pipeline.topics import DAILY_TOPICS
-from heimdall.config.agent_prompt import RESEARCH_AGENT_SYSTEM_PROMPT
-from heimdall.agent.tools import TOOLS
 from langchain.agents import create_agent
-from langchain_openai import ChatOpenAI
 
-model = ChatOpenAI(
-    model="gpt-5.4",
-)
+from heimdall.agent.tools import TOOLS
+from heimdall.config.agent_model import model
+from heimdall.config.agent_prompt import RESEARCH_AGENT_SYSTEM_PROMPT
 
-research_agent = create_agent(
-    model, 
-    tools=TOOLS, 
-    system_prompt=RESEARCH_AGENT_SYSTEM_PROMPT,  
-)
+
+
+
+def build_research_agent(response_format=None):
+    """Build the Heimdall topic research agent."""
+    return create_agent(
+        model=model, 
+        tools=TOOLS, 
+        system_prompt=RESEARCH_AGENT_SYSTEM_PROMPT, 
+        response_format=response_format,
+    )
+
+
