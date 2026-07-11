@@ -9,7 +9,7 @@ def run() -> list[ArticleCandidate]:
 
     all_candidates = []
 
-    for topic in DAILY_TOPICS[:1]: #temp running one topic
+    for topic in DAILY_TOPICS[:]: 
         print(f"Researching topic: {topic.name}")
 
         result = heimdall.invoke({
@@ -32,7 +32,8 @@ def run() -> list[ArticleCandidate]:
         all_candidates.extend(candidates)
 
     return all_candidates
-        
+
+
 
 
         

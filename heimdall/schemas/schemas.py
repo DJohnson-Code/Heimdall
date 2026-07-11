@@ -15,12 +15,17 @@ class FeedItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 class ArticleCandidate(FeedItem):
-    snippet: str = Field(min_length=1)
     selection_reason: str = Field(min_length=1)
-    article: str = Field(min_length=1)
 
     model_config = ConfigDict(extra="forbid")
 
+class FetchedArticle(BaseModel): 
+    final_url: HttpUrl
+    source: str = Field(min_length=1)
+    article: str = Field(min_length=1, max_length=12000)
+    truncated: bool 
+
+    model_config = ConfigDict(extra="forbid")
 class NewsArticle(BaseModel): 
     id: UUID = Field(default_factory=uuid4)
     article: str = Field(min_length=1)
