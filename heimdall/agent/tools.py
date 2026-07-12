@@ -1,9 +1,11 @@
 import httpx
+import feedparser
 import trafilatura
 from urllib.parse import urlparse
 
-import feedparser
 from langchain_core.tools import tool
+
+from datetime import datetime, timezone
 
 from heimdall.pipeline.topics import DAILY_TOPICS, TopicConfig
 from heimdall.schemas.schemas import FeedItem
@@ -58,11 +60,16 @@ def search_rss(topic_name: str) -> list[dict]:
                 or entry.get("description")
                 or ""
             )
-            publisher = entry.get("publisher")
-            published_at = entry.get("published_at")
+            publisher = entry.get("publisher") or feed.feed.get("title")
+            published_parts = entry.get("published_parsed") or entry.get("updated_parsed")
 
-            if not title or not url or not snippet: 
+            if not title or not url or not snippet or not publisher or not published_parts:
                 continue
+
+            published_at = datetime(
+                *published_parts[:6],
+                tzinfo=timezone.utc,
+            )
 
             feed_item = FeedItem(
                 title=title,
