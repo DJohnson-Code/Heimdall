@@ -47,8 +47,8 @@ def search_rss(topic_name: str) -> list[dict]:
             response.raise_for_status()
         except httpx.HTTPError:
             continue
-        
-        feed = feedparser.parse(feed_url)
+
+        feed = feedparser.parse(response.text)
 
         for entry in feed.entries: 
             title = entry.get("title")
@@ -58,6 +58,8 @@ def search_rss(topic_name: str) -> list[dict]:
                 or entry.get("description")
                 or ""
             )
+            publisher = entry.get("publisher")
+            published_at = entry.get("published_at")
 
             if not title or not url or not snippet: 
                 continue
@@ -67,6 +69,8 @@ def search_rss(topic_name: str) -> list[dict]:
                 url=url,
                 source=source_from_url(url),
                 snippet=snippet,
+                publisher=publisher, 
+                published_at=published_at,
             )
 
             rss_output.append(feed_item.model_dump(mode="json"))

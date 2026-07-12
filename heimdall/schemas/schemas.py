@@ -8,8 +8,8 @@ class FeedItem(BaseModel):
     title: str = Field(min_length=1)
     url: HttpUrl
     source: str = Field(min_length=1)
-    publisher: str | None = None
-    published_at: datetime | None = None
+    publisher: str = Field(min_length=1)
+    published_at: datetime 
     snippet: str | None = None
 
     model_config = ConfigDict(extra="forbid")
@@ -19,10 +19,14 @@ class ArticleCandidate(FeedItem):
 
     model_config = ConfigDict(extra="forbid")
 
+class ResearchResult(BaseModel): 
+    candidates: list[ArticleCandidate]
+
+    model_config = ConfigDict(extra="forbid")
 class FetchedArticle(BaseModel): 
     final_url: HttpUrl
     source: str = Field(min_length=1)
-    article: str = Field(min_length=1, max_length=12000)
+    article: str = Field(min_length=1)
     truncated: bool 
 
     model_config = ConfigDict(extra="forbid")
