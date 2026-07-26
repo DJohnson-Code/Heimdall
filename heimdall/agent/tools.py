@@ -11,6 +11,8 @@ from heimdall.pipeline.topics import DAILY_TOPICS, TopicConfig
 from heimdall.schemas.schemas import FeedItem
 
 MAX_ARTICLE_CHARS = 12_000
+MAX_ITEMS_PER_FEED = 5
+
 
 def topic_helper(topic_name: str) -> TopicConfig:
     """Return the configured topic matching ``topic_name`` case-insensitively."""
@@ -36,9 +38,9 @@ def search_rss(topic_name: str) -> list[dict]:
 
     topic = topic_helper(topic_name)
 
-    rss_output: list[dict] = []
+    all_items: list[FeedItem] = []
 
-    for feed_url in topic.rss_sources: 
+    for feed_url in topic.rss_sources:
         try:
             response = httpx.get(
                 feed_url,
@@ -52,7 +54,9 @@ def search_rss(topic_name: str) -> list[dict]:
 
         feed = feedparser.parse(response.text)
 
-        for entry in feed.entries: 
+        feed_items: list[FeedItem] = []
+
+        for entry in feed.entries:
             title = entry.get("title")
             url = entry.get("link")
             snippet = (
@@ -76,13 +80,18 @@ def search_rss(topic_name: str) -> list[dict]:
                 url=url,
                 source=source_from_url(url),
                 snippet=snippet,
-                publisher=publisher, 
+                publisher=publisher,
                 published_at=published_at,
             )
 
-            rss_output.append(feed_item.model_dump(mode="json"))
+            feed_items.append(feed_item)
 
-    return rss_output[: topic.max_articles]
+        # Cap per feed (newest first) so one busy feed can't crowd out the others.
+        feed_items.sort(key=lambda item: item.published_at, reverse=True)
+        all_items.extend(feed_items[:MAX_ITEMS_PER_FEED])
+
+    all_items.sort(key=lambda item: item.published_at, reverse=True)
+    return [item.model_dump(mode="json") for item in all_items]
 
 
 

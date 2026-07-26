@@ -19,7 +19,7 @@ def run() -> list[ArticleCandidate]:
 
         research_result = result["structured_response"]
 
-        all_candidates.extend(research_result.candidates)
+        all_candidates.extend(research_result.candidates[: topic.max_articles])
 
     return all_candidates
 
