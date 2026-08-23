@@ -11,7 +11,8 @@ from heimdall.pipeline.topics import DAILY_TOPICS, TopicConfig
 from heimdall.schemas.schemas import FeedItem
 
 MAX_ARTICLE_CHARS = 12_000
-MAX_ITEMS_PER_FEED = 5
+MAX_ITEMS_PER_FEED = 3
+MAX_ITEMS_PER_TOPIC = 15
 
 
 def topic_helper(topic_name: str) -> TopicConfig:
@@ -91,7 +92,7 @@ def search_rss(topic_name: str) -> list[dict]:
         all_items.extend(feed_items[:MAX_ITEMS_PER_FEED])
 
     all_items.sort(key=lambda item: item.published_at, reverse=True)
-    return [item.model_dump(mode="json") for item in all_items]
+    return [item.model_dump(mode="json") for item in all_items[:MAX_ITEMS_PER_TOPIC]]
 
 
 
