@@ -13,6 +13,7 @@ from heimdall.schemas.schemas import FeedItem
 MAX_ARTICLE_CHARS = 12_000
 MAX_ITEMS_PER_FEED = 3
 MAX_ITEMS_PER_TOPIC = 15
+MAX_FETCHES_PER_TOPIC = 10
 
 
 def topic_helper(topic_name: str) -> TopicConfig:
@@ -94,62 +95,74 @@ def search_rss(topic_name: str) -> list[dict]:
     all_items.sort(key=lambda item: item.published_at, reverse=True)
     return [item.model_dump(mode="json") for item in all_items[:MAX_ITEMS_PER_TOPIC]]
 
+def build_fetch_article_tool():
+    fetch_count = 0
 
+    @tool(description="Fetch article text from a URL.")
+    def fetch_article(url: str) -> dict:
+        """Fetch one article URL and return extracted article text."""
+        nonlocal fetch_count
 
-@tool(description="Fetch article text from a URL.")
-def fetch_article(url: str) -> dict:
-    """Fetch one article URL and return extracted article text."""
-    try:
-        response = httpx.get(
-            url,
-            timeout=15,
-            follow_redirects=True,
-            headers={"User-Agent": "Heimdall/0.1"},
-        )
-        response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        return {
-            "url": url,
-            "ok": False,
-            "error": "bad_status",
-            "status_code": exc.response.status_code,
-        }
-    except httpx.RequestError as exc:
-        return {
-            "url": url,
-            "ok": False,
-            "error": "request_failed",
-            "message": str(exc),
-        }
+        if fetch_count >= MAX_FETCHES_PER_TOPIC: 
+            return {
+                "ok": False, 
+                "error": "Fetch has been called the max number of times", 
+            }
+        fetch_count += 1
 
-    final_url = str(response.url)
+        try:
+            response = httpx.get(
+                url,
+                timeout=15,
+                follow_redirects=True,
+                headers={"User-Agent": "Heimdall/0.1"},
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            return {
+                "url": url,
+                "ok": False,
+                "error": "bad_status",
+                "status_code": exc.response.status_code,
+            }
+        except httpx.RequestError as exc:
+            return {
+                "url": url,
+                "ok": False,
+                "error": "request_failed",
+                "message": str(exc),
+            }
 
-    content_type = response.headers.get("content-type", "").lower()
-    if "html" not in content_type:
+        final_url = str(response.url)
+
+        content_type = response.headers.get("content-type", "").lower()
+        if "html" not in content_type:
+            return {
+                "url": final_url,
+                "ok": False,
+                "error": "unsupported_content_type",
+                "content_type": content_type or "missing",
+                "status_code": response.status_code,
+            }
+
+        article = trafilatura.extract(response.text, url=final_url) or ""
+
+        if not article:
+            return {
+                "url": final_url,
+                "ok": False,
+                "error": "no_article_text_found",
+                "status_code": response.status_code,
+            }
         return {
             "url": final_url,
-            "ok": False,
-            "error": "unsupported_content_type",
-            "content_type": content_type or "missing",
+            "ok": True,
             "status_code": response.status_code,
+            "source": source_from_url(final_url),
+            "article": article[:MAX_ARTICLE_CHARS],
+            "truncated": len(article) > MAX_ARTICLE_CHARS,
         }
-
-    article = trafilatura.extract(response.text, url=final_url) or ""
-
-    if not article:
-        return {
-            "url": final_url,
-            "ok": False,
-            "error": "no_article_text_found",
-            "status_code": response.status_code,
-        }
-    return {
-        "url": final_url,
-        "ok": True,
-        "status_code": response.status_code,
-        "source": source_from_url(final_url),
-        "article": article[:MAX_ARTICLE_CHARS],
-        "truncated": len(article) > MAX_ARTICLE_CHARS,
-    }
+    return fetch_article
     
-TOOLS = [search_rss, fetch_article]
+def build_tools(): 
+    return [search_rss, build_fetch_article_tool()]

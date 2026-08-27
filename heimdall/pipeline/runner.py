@@ -4,11 +4,11 @@ from heimdall.agent.research_agent import build_research_agent
 
 
 def run() -> list[ArticleCandidate]:
-    heimdall = build_research_agent()
 
     all_candidates = []
 
     for topic in DAILY_TOPICS: 
+        heimdall = build_research_agent()
         print(f"Researching topic: {topic.name}")
 
         result = heimdall.invoke({
