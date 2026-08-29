@@ -154,6 +154,8 @@ def build_fetch_article_tool():
                 "error": "no_article_text_found",
                 "status_code": response.status_code,
             }
+
+        
         return {
             "url": final_url,
             "ok": True,
@@ -164,5 +166,5 @@ def build_fetch_article_tool():
         }
     return fetch_article
     
-def build_tools(): 
+def build_tools(article_cache): 
     return [search_rss, build_fetch_article_tool()]
