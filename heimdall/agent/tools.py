@@ -8,7 +8,7 @@ from langchain_core.tools import tool
 from datetime import datetime, timezone
 
 from heimdall.pipeline.topics import DAILY_TOPICS, TopicConfig
-from heimdall.schemas.schemas import FeedItem
+from heimdall.schemas.schemas import FeedItem, FetchedArticle
 
 MAX_ARTICLE_CHARS = 12_000
 MAX_ITEMS_PER_FEED = 3
@@ -95,7 +95,7 @@ def search_rss(topic_name: str) -> list[dict]:
     all_items.sort(key=lambda item: item.published_at, reverse=True)
     return [item.model_dump(mode="json") for item in all_items[:MAX_ITEMS_PER_TOPIC]]
 
-def build_fetch_article_tool():
+def build_fetch_article_tool(article_cache):
     fetch_count = 0
 
     @tool(description="Fetch article text from a URL.")
@@ -155,7 +155,15 @@ def build_fetch_article_tool():
                 "status_code": response.status_code,
             }
 
-        
+        cached_article = FetchedArticle(
+            final_url=final_url, 
+            source=source_from_url(final_url), 
+            article=article, 
+            truncated=False
+        )
+
+        article_cache[url] = cached_article
+
         return {
             "url": final_url,
             "ok": True,
@@ -167,4 +175,4 @@ def build_fetch_article_tool():
     return fetch_article
     
 def build_tools(article_cache): 
-    return [search_rss, build_fetch_article_tool()]
+    return [search_rss, build_fetch_article_tool(article_cache)]
