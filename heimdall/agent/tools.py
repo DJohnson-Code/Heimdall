@@ -95,7 +95,7 @@ def search_rss(topic_name: str) -> list[dict]:
     all_items.sort(key=lambda item: item.published_at, reverse=True)
     return [item.model_dump(mode="json") for item in all_items[:MAX_ITEMS_PER_TOPIC]]
 
-def build_fetch_article_tool(article_cache):
+def build_fetch_article_tool(article_cache: dict[str, FetchedArticle]):
     fetch_count = 0
 
     @tool(description="Fetch article text from a URL.")
@@ -174,5 +174,5 @@ def build_fetch_article_tool(article_cache):
         }
     return fetch_article
     
-def build_tools(article_cache): 
+def build_tools(article_cache: dict[str, FetchedArticle]): 
     return [search_rss, build_fetch_article_tool(article_cache)]
