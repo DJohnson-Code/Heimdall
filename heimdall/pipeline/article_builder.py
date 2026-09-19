@@ -19,7 +19,7 @@ def article_builder(
         news_article = NewsArticle(
             article=fetched.article, 
             title=candidate.title, 
-            url=fetched.source, 
+            url=candidate.url, 
             publisher=candidate.publisher, 
             published_at=candidate.published_at,
         )
