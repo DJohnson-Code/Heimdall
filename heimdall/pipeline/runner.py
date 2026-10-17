@@ -7,10 +7,10 @@ from heimdall.agent.research_agent import build_research_agent
 def run() -> list[NewsArticle]:
 
     all_candidates: list[ArticleCandidate] = []
-
+    tracked_urls: set[str] = set()
     article_cache: dict[str, FetchedArticle] = {}
 
-    for topic in DAILY_TOPICS: 
+    for topic in DAILY_TOPICS:
         heimdall = build_research_agent(article_cache)
         print(f"Researching topic: {topic.name}")
 
@@ -28,7 +28,14 @@ def run() -> list[NewsArticle]:
 
         research_result = result["structured_response"]
 
-        all_candidates.extend(research_result.candidates[:topic.max_articles])
+        for candidate in research_result.candidates[:topic.max_articles]:
+            url = str(candidate.url)
+
+            if url in tracked_urls:
+                continue
+
+            tracked_urls.add(url)
+            all_candidates.append(candidate)
 
     news_articles = article_builder(all_candidates, article_cache)
 
