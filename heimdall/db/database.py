@@ -1,7 +1,8 @@
 import os
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text 
 from sqlalchemy.orm import sessionmaker
+
 
 def get_database_url() -> str: 
     url = os.environ.get("DATABASE_URL")
@@ -15,3 +16,7 @@ def get_database_url() -> str:
 
 engine = create_engine(get_database_url())
 SessionLocal = sessionmaker(bind=engine)
+
+def check_db() -> None: 
+    with engine.connect() as conn: 
+        conn.execute(text("SELECT 1"))

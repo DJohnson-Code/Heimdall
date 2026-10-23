@@ -2,9 +2,11 @@ from heimdall.pipeline.topics import DAILY_TOPICS
 from heimdall.pipeline.article_builder import article_builder
 from heimdall.schemas.schemas import ArticleCandidate, FetchedArticle, NewsArticle
 from heimdall.agent.research_agent import build_research_agent
+from heimdall.db.database import check_db
 
 
 def run() -> list[NewsArticle]:
+    check_db()
 
     all_candidates: list[ArticleCandidate] = []
     tracked_urls: set[str] = set()
