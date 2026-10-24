@@ -15,7 +15,7 @@ def get_database_url() -> str:
     return url
 
 engine = create_engine(get_database_url())
-SessionLocal = sessionmaker(bind=engine)
+SessionFactory = sessionmaker(bind=engine)
 
 def check_db() -> None: 
     with engine.connect() as conn: 
