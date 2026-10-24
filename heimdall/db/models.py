@@ -13,7 +13,7 @@ class SentArticle(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(500))
-    url: Mapped[str] = mapped_column(String(900), unique=True)
+    url: Mapped[str] = mapped_column(String(), unique=True)
     date_sent: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         server_default = func.now(), 
