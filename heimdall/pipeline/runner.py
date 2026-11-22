@@ -2,7 +2,8 @@ from heimdall.pipeline.topics import DAILY_TOPICS
 from heimdall.pipeline.article_builder import article_builder
 from heimdall.schemas.schemas import ArticleCandidate, FetchedArticle, NewsArticle
 from heimdall.agent.research_agent import build_research_agent
-from heimdall.db.database import check_db
+from heimdall.db.database import check_db, SessionFactory
+from heimdall.db.sent_articles import previously_sent_articles
 
 
 def run() -> list[NewsArticle]:
@@ -41,7 +42,17 @@ def run() -> list[NewsArticle]:
 
     news_articles = article_builder(all_candidates, article_cache)
 
-    return news_articles
+    news_article_urls = [str(article.url) for article in news_articles]
+
+    with SessionFactory() as session:
+        sent_urls = previously_sent_articles(session, news_article_urls)
+
+    unsent_articles = [
+        article for article in news_articles
+        if str(article.url) not in sent_urls
+    ]
+
+    return unsent_articles
 
 
 
