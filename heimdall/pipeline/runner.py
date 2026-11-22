@@ -41,18 +41,21 @@ def run() -> list[NewsArticle]:
             all_candidates.append(candidate)
 
     news_articles = article_builder(all_candidates, article_cache)
+    print(f"[debug] NewsArticles built: {len(news_articles)}")
 
     news_article_urls = [str(article.url) for article in news_articles]
 
     with SessionFactory() as session:
         sent_urls = previously_sent_articles(session, news_article_urls)
+    print(f"[debug] Previously sent articles found: {len(sent_urls)}")
 
-    unsent_articles = [
+    fresh_articles = [
         article for article in news_articles
         if str(article.url) not in sent_urls
     ]
+    print(f"[debug] Unsent articles remaining: {len(fresh_articles)}")
 
-    return unsent_articles
+    return fresh_articles
 
 
 
