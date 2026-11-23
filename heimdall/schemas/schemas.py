@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from uuid import UUID, uuid4
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
@@ -40,6 +41,20 @@ class NewsArticle(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
+class ArticleAnalysis(BaseModel):
+    summary: str = Field(min_length=1) 
+
+    category: Literal[
+        "AI",
+        "Backend Engineering / Developer Tools",
+        "Tech Markets / IPOs",
+        "Cybersecurity / API Security",
+        "General Tech / Tech Business",
+    ]
+
+    relevance_score: int = Field(ge=0, le=100)
+
+    model_config = ConfigDict(extra="forbid")
 class ProcessedArticle(BaseModel):
     article_id: UUID
     title: str = Field(min_length=1)
