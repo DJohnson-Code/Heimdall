@@ -41,6 +41,13 @@ class NewsArticle(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
+class SummaryInput(BaseModel):
+    title: str = Field(min_length=1)
+    article: str = Field(min_length=1)
+    publisher: str = Field(min_length=1)
+    published_at: datetime 
+
+    model_config = ConfigDict(extra="forbid")
 class ArticleAnalysis(BaseModel):
     summary: str = Field(min_length=1) 
 
@@ -75,6 +82,7 @@ class DigestEntry(BaseModel):
     article_url: HttpUrl 
     category: str = Field(min_length=1)
     published_at: datetime 
+    relevance_score: int = Field(ge=0, le=100)
 
     model_config = ConfigDict(extra="forbid")
 
