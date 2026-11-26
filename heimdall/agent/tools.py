@@ -7,7 +7,7 @@ from langchain_core.tools import tool
 
 from datetime import datetime, timezone
 
-from heimdall.pipeline.topics import DAILY_TOPICS, TopicConfig
+from heimdall.config.topics import DAILY_TOPICS, TopicConfig
 from heimdall.schemas.schemas import FeedItem, FetchedArticle
 
 MAX_ARTICLE_CHARS = 12_000

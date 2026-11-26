@@ -1,4 +1,4 @@
-from heimdall.pipeline.topics import DAILY_TOPICS
+from heimdall.config.topics import DAILY_TOPICS
 from heimdall.pipeline.article_builder import article_builder
 from heimdall.schemas.schemas import ArticleCandidate, FetchedArticle, NewsArticle
 from heimdall.agent.research_agent import build_research_agent

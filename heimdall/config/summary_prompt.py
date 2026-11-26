@@ -1,4 +1,4 @@
-from heimdall.pipeline.topics import DAILY_TOPICS
+from heimdall.config.topics import DAILY_TOPICS
 
 
 topic_descriptions = "\n".join(
