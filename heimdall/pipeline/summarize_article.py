@@ -1,5 +1,6 @@
 from heimdall.schemas.schemas import NewsArticle, ArticleAnalysis, ProcessedArticle, SummaryInput
 from heimdall.config.agent_model import model
+from heimdall.config.summary_prompt import SUMMARIZER_SYSTEM_PROMPT
 
 structured_model_response = model.with_structured_output(ArticleAnalysis)
 MAX_ARTICLE_CHARS = 30_000
@@ -20,28 +21,46 @@ def prepare_article_input(articles: list[NewsArticle]) -> list[SummaryInput]:
     return summary_input
 
 def summarize_article(articles: list[NewsArticle]) -> list[ProcessedArticle]: 
-    # articles_processed: list[ProcessedArticle] = []
+    articles_processed: list[ProcessedArticle] = []
 
-    # Extract relevant fields and cap article text length
-    # (done by prepare_article_input).
+    # Build one SummaryInput per article, with article text capped
+    prepared_articles = prepare_article_input(articles)
+    
 
-    # Construct a list of individual LLM inputs.
+    for original, prepared in zip(articles, prepared_articles, strict=True):
+        summary_response = structured_model_response.invoke([
+            ("system", SUMMARIZER_SYSTEM_PROMPT),
+            ("human", prepared.model_dump_json())
+        ])
+        
+        articles_processed.append(
+            ProcessedArticle(
+                article_id=original.id,
+                title=original.title,
+                url=original.url,
+                publisher=original.publisher,
+                published_at=original.published_at,
+                category=summary_response.category,
+                summary=summary_response.summary,
+                relevance_score=summary_response.relevance_score
+            )
+        )
+    return articles_processed
 
     # Configure structured output using ArticleAnalysis
     # (already defined at module level as structured_model_response).
 
-    # Configure bounded retries and concurrency limits.
+    # TODO: Configure bounded retries and concurrency limits.
 
-    # Submit the inputs using batch() with return_exceptions=True.
+    # TODO: Submit the inputs using batch() with return_exceptions=True.
 
-    # Match each response to its original NewsArticle.
+    # TODO: Match each response to its original NewsArticle.
 
-    # Log and skip articles that failed after retries.
+    # TODO: Log and skip articles that failed after retries.
 
-    # Combine successful ArticleAnalysis and NewsArticle
-    # objects to construct ProcessedArticle objects.
+    # TODO: Combine successful ArticleAnalysis and News
 
-    # Log the number of successful and failed analyses.
+    # TODO: Log the number of successful and failed analyses.
 
-    # Return the list of ProcessedArticle objects.
+    # TODO: Return the list of ProcessedArticle objects.
     pass

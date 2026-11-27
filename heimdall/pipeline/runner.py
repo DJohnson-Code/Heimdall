@@ -1,12 +1,13 @@
 from heimdall.config.topics import DAILY_TOPICS
+from heimdall.pipeline.summarize_article import summarize_article
 from heimdall.pipeline.article_builder import article_builder
-from heimdall.schemas.schemas import ArticleCandidate, FetchedArticle, NewsArticle
+from heimdall.schemas.schemas import ArticleCandidate, FetchedArticle, NewsArticle, ProcessedArticle
 from heimdall.agent.research_agent import build_research_agent
 from heimdall.db.database import check_db, SessionFactory
 from heimdall.db.sent_articles import previously_sent_articles
 
 
-def run() -> list[NewsArticle]:
+def run() -> list[ProcessedArticle]:
     check_db()
 
     all_candidates: list[ArticleCandidate] = []
@@ -55,7 +56,9 @@ def run() -> list[NewsArticle]:
     ]
     print(f"[debug] Unsent articles remaining: {len(fresh_articles)}")
 
-    return fresh_articles
+    processed_articles = summarize_article(fresh_articles)
+
+    return processed_articles
 
 
 
