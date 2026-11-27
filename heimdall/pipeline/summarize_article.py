@@ -51,26 +51,36 @@ def summarize_article(articles: list[NewsArticle]) -> list[ProcessedArticle]:
 
     for original, prepared in zip(articles, prepared_articles, strict=True):
         # retries and exception handling 
- 
-        summary_response = structured_model_response.invoke([
-            ("system", SUMMARIZER_SYSTEM_PROMPT),
-            ("human", prepared.model_dump_json())
-        ])
-
-
-        
-        articles_processed.append(
-            ProcessedArticle(
-                article_id=original.id,
-                title=original.title,
-                url=original.url,
-                publisher=original.publisher,
-                published_at=original.published_at,
-                category=summary_response.category,
-                summary=summary_response.summary,
-                relevance_score=summary_response.relevance_score
+        try: 
+            summary_response = structured_model_response.invoke([
+                ("system", SUMMARIZER_SYSTEM_PROMPT),
+                ("human", prepared.model_dump_json())
+            ])
+        except (APIConnectionError, RateLimitError, InternalServerError) as e:
+            # Transient provider issues
+            print(f"LLM call failed for: {original.url}, {original.id}: {e}")
+        except (ValidationError, OutputParserException) as e:
+            # Model produced output that doesn't match ArticleAnalysis schema
+            print(f"Schema mismatch for: {original.url}, {original.id} {e}")
+        else: 
+            articles_processed.append(
+                ProcessedArticle(
+                    article_id=original.id,
+                    title=original.title,
+                    url=original.url,
+                    publisher=original.publisher,
+                    published_at=original.published_at,
+                    category=summary_response.category,
+                    summary=summary_response.summary,
+                    relevance_score=summary_response.relevance_score
+                )
             )
-        )
+
+    print(f"[debug] Articles submitted: {len(articles)}")
+    print(f"[debug] Articles processed: {len(articles_processed)}")
+    print(f"[debug] Articles failed: {len(articles) - len(articles_processed)}")
+
+
     return articles_processed
 
     # Configure structured output using ArticleAnalysis
