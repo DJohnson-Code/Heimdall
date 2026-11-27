@@ -1,8 +1,30 @@
 from heimdall.schemas.schemas import NewsArticle, ArticleAnalysis, ProcessedArticle, SummaryInput
-from heimdall.config.agent_model import model
+from heimdall.config.agent_model import summarizer_model
 from heimdall.config.summary_prompt import SUMMARIZER_SYSTEM_PROMPT
+from openai import APIConnectionError, RateLimitError, InternalServerError
+from pydantic import ValidationError
+from langchain_core.exceptions import OutputParserException
 
-structured_model_response = model.with_structured_output(ArticleAnalysis)
+structured_model_response = (
+    summarizer_model
+    .with_structured_output(ArticleAnalysis)
+    .with_retry(
+        retry_if_exception_type=(
+            APIConnectionError,
+            RateLimitError,
+            InternalServerError,
+            ValidationError,
+            OutputParserException,
+        ),
+        stop_after_attempt=3,
+        wait_exponential_jitter=True,
+        exponential_jitter_params={
+            "initial": 2,
+            "max": 10,
+        },
+    )
+)
+
 MAX_ARTICLE_CHARS = 30_000
 
 def prepare_article_input(articles: list[NewsArticle]) -> list[SummaryInput]: 
@@ -28,10 +50,14 @@ def summarize_article(articles: list[NewsArticle]) -> list[ProcessedArticle]:
     
 
     for original, prepared in zip(articles, prepared_articles, strict=True):
+        # retries and exception handling 
+ 
         summary_response = structured_model_response.invoke([
             ("system", SUMMARIZER_SYSTEM_PROMPT),
             ("human", prepared.model_dump_json())
         ])
+
+
         
         articles_processed.append(
             ProcessedArticle(
